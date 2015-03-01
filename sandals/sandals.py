@@ -49,7 +49,7 @@ def sql(query, tables):
             assert state == STATES.TABLE
             state = STATES.LIMIT
         elif state == STATES.LIMIT:
-            limit = int(token.value)
+            limit = token_value(token)
             df = df.head(limit)
             state = None
 
@@ -57,8 +57,8 @@ def sql(query, tables):
             state = STATES.END
 
         else:
-            raise ValueError(u"Could not parse token %s in statement %s" %
-                (repr(token), repr(statement)))
+            raise ValueError(u"Could not parse token %r in statement %r" %
+                (token, statement))
     return df
 
 
@@ -71,17 +71,28 @@ def filter_data_frame(df, where):
         elif token.ttype == sqlparse.tokens.Punctuation:
             pass
         elif isinstance(token, sqlparse.sql.Comparison):
-            column = token.left.value
-            value = token.right.value
-            if value.startswith('"'):
-                value = value.strip('"')
-            elif value.startswith("'"):
-                value = value.strip("'")
-            return df[df[column] == value]
+            return df[comparison_to_filter(df, token)]
         else:
-            raise ValueError("Could not parse token %s in WHERE clause %s" %
-                (repr(token), repr(where)))
+            raise ValueError("Could not parse token %r in WHERE clause %r" %
+                (token, where))
     return
+
+
+def comparison_to_filter(df, comparison):
+    column = df[comparison.left.value]
+    value = token_value(comparison.right)
+    symbol = filter(is_comparison, comparison.tokens)[0]
+    if symbol.value == "=":
+        return column == value
+    if symbol.value == ">":
+        return column > value
+    if symbol.value == ">=":
+        return column >= value
+    if symbol.value == "<":
+        return column < value
+    if symbol.value == "<=":
+        return column <= value
+    raise ValueError("Unknown comparison symbol: %r" % symbol)
 
 
 def is_keyword(token, keyword):
@@ -98,3 +109,24 @@ def is_identifierlist(token):
 
 def is_where(token):
     return isinstance(token, sqlparse.sql.Where)
+
+
+def is_comparison(token):
+    print token, token.ttype
+    return token.ttype == sqlparse.tokens.Token.Operator.Comparison
+
+
+def token_value(token):
+    value = token.value
+    repr_name = token._get_repr_name()
+    if repr_name == "Single" or repr_name == "Identifier":
+        if value.startswith('"'):
+            return value.strip('"')
+        elif value.startswith("'"):
+            return value.strip("'")
+        return value
+    elif repr_name == "Integer":
+        return int(value)
+    elif repr_name == "Float":
+        return float(value)
+    raise ValueError("Unknown token value %r" % token)

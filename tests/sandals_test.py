@@ -54,10 +54,41 @@ def test_column_selection(tips):
 
 def test_where(tips):
     result = sandals.sql(
-        "SELECT * FROM tips WHERE time = 'Dinner' LIMIT 5;", locals())
-    assert result.shape == tips[tips["time"] == "Dinner"].head(5).shape
+        "SELECT * FROM tips WHERE time = 'Dinner'", locals())
+    assert result.shape == tips[tips["time"] == "Dinner"].shape
+
 
 def test_where_with_double_quote(tips):
     result = sandals.sql(
-        'SELECT * FROM tips WHERE time = "Dinner" LIMIT 5;', locals())
-    assert result.shape == tips[tips["time"] == "Dinner"].head(5).shape
+        'SELECT * FROM tips WHERE time = "Dinner"', locals())
+    assert result.shape == tips[tips["time"] == "Dinner"].shape
+
+
+def test_where_with_greater_than(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE tip > 5.0', locals())
+    assert result.shape == tips[tips["tip"] > 5.0].shape
+
+
+def test_where_with_greater_or_eq_than(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE tip >= 5.0', locals())
+    assert result.shape == tips[tips["tip"] >= 5.0].shape
+
+
+def test_where_with_less_than(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE tip < 5.0', locals())
+    assert result.shape == tips[tips["tip"] < 5.0].shape
+
+
+def test_where_with_less_or_eq_than(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE tip <= 5.0', locals())
+    assert result.shape == tips[tips["tip"] <= 5.0].shape
+
+
+def test_where_with_eq(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE tip = 5', locals())
+    assert result.shape == tips[tips["tip"] == 5].shape
