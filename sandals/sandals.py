@@ -64,7 +64,8 @@ def sql(query, tables):
 
 def where_to_filter(df, where):
     agg_filter = None
-    combine_function = None
+    combine_function = lambda a, b: b
+    column = None
 
     for token in where.tokens:
         if is_keyword(token, "WHERE"):
@@ -74,16 +75,19 @@ def where_to_filter(df, where):
         elif token.ttype == sqlparse.tokens.Punctuation:
             pass
         elif isinstance(token, sqlparse.sql.Comparison):
-            if combine_function == None:
-                agg_filter = comparison_to_filter(df, token)
-            else:
-                agg_filter = combine_function(
-                    agg_filter, comparison_to_filter(df, token))
-                combine_function = None
+            agg_filter = combine_function(
+                agg_filter,
+                comparison_to_filter(df, token))
         elif is_keyword(token, "AND"):
             combine_function = lambda a, b: a & b
         elif is_keyword(token, "OR"):
             combine_function = lambda a, b: a | b
+        elif is_identifier(token):
+            column = df[token.value]
+        elif is_keyword(token, "IS"):
+            pass
+        elif is_keyword(token, "NULL"):
+            agg_filter = combine_function(agg_filter, column.isnull())
         else:
             raise ValueError("Could not parse token %r in WHERE clause %r" %
                 (token, where))

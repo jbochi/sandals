@@ -1,11 +1,12 @@
-import pandas
+import pandas as pd
+import numpy as np
 import pytest
 import sandals
 
 
 @pytest.fixture
 def tips():
-    return pandas.read_csv("tests/data/tips.csv")
+    return pd.read_csv("tests/data/tips.csv")
 
 
 def test_select(tips):
@@ -105,4 +106,20 @@ def test_where_with_or(tips):
     result = sandals.sql(
         "SELECT * FROM tips WHERE tip >= 5 OR total_bill > 45;", locals())
     expected = tips[(tips["tip"] >= 5) | (tips["total_bill"] > 45)]
+    assert result.shape == expected.shape
+
+
+@pytest.mark.xfail
+def test_where_with_special_col_name(tips):
+    result = sandals.sql(
+        "SELECT * FROM tips WHERE size >= 5 OR total_bill > 45;", locals())
+    expected = tips[(tips["size"] >= 5) | (tips["total_bill"] > 45)]
+    assert result.shape == expected.shape
+
+
+def test_where_is_null():
+    frame = pd.DataFrame({'col1': ['A', 'B', np.NaN, 'C', 'D'],
+                          'col2': ['F', np.NaN, 'G', 'H', 'I']})
+    result = sandals.sql("SELECT * FROM frame WHERE col2 IS NULL;", locals())
+    expected = frame[frame['col2'].isnull()]
     assert result.shape == expected.shape
