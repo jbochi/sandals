@@ -86,6 +86,8 @@ def where_to_filter(df, where):
             column = df[token.value]
         elif is_keyword(token, "IS"):
             pass
+        elif is_keyword(token, "NOT NULL"):
+            agg_filter = combine_function(agg_filter, column.notnull())
         elif is_keyword(token, "NULL"):
             agg_filter = combine_function(agg_filter, column.isnull())
         else:
