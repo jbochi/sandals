@@ -43,7 +43,7 @@ def sql(query, tables):
                 df = df[columns]
 
         elif is_where(token):
-            df = filter_data_frame(df, token)
+            df = df[where_to_filter(df, token)]
 
         elif is_keyword(token, "LIMIT"):
             assert state == STATES.TABLE
@@ -62,7 +62,10 @@ def sql(query, tables):
     return df
 
 
-def filter_data_frame(df, where):
+def where_to_filter(df, where):
+    agg_filter = None
+    combine_function = None
+
     for token in where.tokens:
         if is_keyword(token, "WHERE"):
             pass
@@ -71,11 +74,18 @@ def filter_data_frame(df, where):
         elif token.ttype == sqlparse.tokens.Punctuation:
             pass
         elif isinstance(token, sqlparse.sql.Comparison):
-            return df[comparison_to_filter(df, token)]
+            if combine_function == None:
+                agg_filter = comparison_to_filter(df, token)
+            else:
+                agg_filter = combine_function(
+                    agg_filter, comparison_to_filter(df, token))
+                combine_function = None
+        elif is_keyword(token, "AND"):
+            combine_function = lambda a, b: a & b
         else:
             raise ValueError("Could not parse token %r in WHERE clause %r" %
                 (token, where))
-    return
+    return agg_filter
 
 
 def comparison_to_filter(df, comparison):
@@ -112,7 +122,6 @@ def is_where(token):
 
 
 def is_comparison(token):
-    print token, token.ttype
     return token.ttype == sqlparse.tokens.Token.Operator.Comparison
 
 
