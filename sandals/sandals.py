@@ -21,7 +21,7 @@ def sql(query, tables):
             pass
 
         elif token.ttype == sqlparse.tokens.DML:
-            assert token.value == "SELECT"
+            assert token.value.upper() == "SELECT"
             assert state == STATES.SELECT
             state = STATES.COLUMNS
 
@@ -58,11 +58,14 @@ def sql(query, tables):
                 (repr(token), repr(statement)))
     return df
 
+
 def is_keyword(token, keyword):
     return token.is_keyword and token.value.upper() == keyword.upper()
 
+
 def is_identifier(token):
     return isinstance(token, sqlparse.sql.Identifier)
+
 
 def is_identifierlist(token):
     return isinstance(token, sqlparse.sql.IdentifierList)
