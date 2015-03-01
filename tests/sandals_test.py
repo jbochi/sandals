@@ -52,5 +52,12 @@ def test_column_selection(tips):
     assert result.shape[0] == tips.shape[0]
 
 
-# def test_where(tips):
-#     result = sandals.sql("SELECT * FROM tips WHERE time = 'Dinner' LIMIT 5;")
+def test_where(tips):
+    result = sandals.sql(
+        "SELECT * FROM tips WHERE time = 'Dinner' LIMIT 5;", locals())
+    assert result.shape == tips[tips["time"] == "Dinner"].head(5).shape
+
+def test_where_with_double_quote(tips):
+    result = sandals.sql(
+        'SELECT * FROM tips WHERE time = "Dinner" LIMIT 5;', locals())
+    assert result.shape == tips[tips["time"] == "Dinner"].head(5).shape

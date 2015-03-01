@@ -1,1 +1,1 @@
-from sandals import *
+from sandals import sql

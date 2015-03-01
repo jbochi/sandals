@@ -42,6 +42,9 @@ def sql(query, tables):
             if columns:
                 df = df[columns]
 
+        elif is_where(token):
+            df = filter_data_frame(df, token)
+
         elif is_keyword(token, "LIMIT"):
             assert state == STATES.TABLE
             state = STATES.LIMIT
@@ -54,9 +57,31 @@ def sql(query, tables):
             state = STATES.END
 
         else:
-            raise ValueError(u"Could not parse token %s in statment %s" %
+            raise ValueError(u"Could not parse token %s in statement %s" %
                 (repr(token), repr(statement)))
     return df
+
+
+def filter_data_frame(df, where):
+    for token in where.tokens:
+        if is_keyword(token, "WHERE"):
+            pass
+        elif token.is_whitespace():
+            pass
+        elif token.ttype == sqlparse.tokens.Punctuation:
+            pass
+        elif isinstance(token, sqlparse.sql.Comparison):
+            column = token.left.value
+            value = token.right.value
+            if value.startswith('"'):
+                value = value.strip('"')
+            elif value.startswith("'"):
+                value = value.strip("'")
+            return df[df[column] == value]
+        else:
+            raise ValueError("Could not parse token %s in WHERE clause %s" %
+                (repr(token), repr(where)))
+    return
 
 
 def is_keyword(token, keyword):
@@ -69,3 +94,7 @@ def is_identifier(token):
 
 def is_identifierlist(token):
     return isinstance(token, sqlparse.sql.IdentifierList)
+
+
+def is_where(token):
+    return isinstance(token, sqlparse.sql.Where)
