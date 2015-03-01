@@ -18,6 +18,11 @@ def test_select_should_accept_trailing_semicolon(tips):
     assert result.shape == tips.shape
 
 
+def test_select_should_accept_line_break(tips):
+    result = sandals.sql("SELECT * \n FROM tips;", locals())
+    assert result.shape == tips.shape
+
+
 def test_select_is_case_insensitive(tips):
     result = sandals.sql("select * from tips;", locals())
     assert result.shape == tips.shape
