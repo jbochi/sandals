@@ -15,13 +15,11 @@ def sql(query, tables):
         if isinstance(token, sqlparse.sql.Identifier):
             table_name = token.get_name()
             df = tables[table_name]
-        elif token.is_keyword and token.value == "LIMIT":
+        elif token.is_keyword and token.value.upper() == "LIMIT":
             state = STATES.LIMIT
         elif state == STATES.LIMIT and not token.is_whitespace():
             limit = int(token.value)
             df = df.head(limit)
             state = None
-        else:
-            print repr(token), state, token.is_whitespace()
 
     return df
