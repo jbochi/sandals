@@ -23,3 +23,13 @@ def test_select_with_limit_is_case_insensitive(tips):
     result = sandals.sql("SELECT * from tips limit 5", locals())
     assert result.shape[0] == 5
     assert result.shape[1] == tips.shape[1]
+
+def test_single_column_selection(tips):
+    result = sandals.sql("SELECT sex FROM tips", locals())
+    assert list(result.columns.values) == ["sex"]
+    assert result.shape[0] == tips.shape[0]
+
+def test_column_selection(tips):
+    result = sandals.sql("SELECT total_bill, sex FROM tips", locals())
+    assert list(result.columns.values) == ["total_bill", "sex"]
+    assert result.shape[0] == tips.shape[0]
