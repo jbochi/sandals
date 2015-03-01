@@ -125,6 +125,15 @@ def test_where_is_null():
     assert result.shape == expected.shape
 
 
+def test_where_is_null_with_or():
+    frame = pd.DataFrame({'col1': ['A', 'B', np.NaN, 'C', 'D'],
+                          'col2': ['F', np.NaN, 'G', 'H', 'I']})
+    result = sandals.sql(
+        "SELECT * FROM frame WHERE col1 = 'C' OR col2 IS NULL;", locals())
+    expected = frame[(frame['col1'] == 'C') | (frame['col2'].isnull())]
+    assert result.shape == expected.shape
+
+
 def test_where_is_not_null():
     frame = pd.DataFrame({'col1': ['A', 'B', np.NaN, 'C', 'D'],
                           'col2': ['F', np.NaN, 'G', 'H', 'I']})
