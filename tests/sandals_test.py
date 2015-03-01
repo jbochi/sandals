@@ -93,8 +93,16 @@ def test_where_with_eq(tips):
         'SELECT * FROM tips WHERE tip = 5', locals())
     assert result.shape == tips[tips["tip"] == 5].shape
 
+
 def test_where_with_and(tips):
     result = sandals.sql(
         "SELECT * FROM tips WHERE time = 'Dinner' AND tip > 5.00;", locals())
     expected = tips[(tips["tip"] > 5) & (tips["time"] == "Dinner")]
+    assert result.shape == expected.shape
+
+
+def test_where_with_or(tips):
+    result = sandals.sql(
+        "SELECT * FROM tips WHERE tip >= 5 OR total_bill > 45;", locals())
+    expected = tips[(tips["tip"] >= 5) | (tips["total_bill"] > 45)]
     assert result.shape == expected.shape

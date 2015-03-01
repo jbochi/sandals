@@ -82,6 +82,8 @@ def where_to_filter(df, where):
                 combine_function = None
         elif is_keyword(token, "AND"):
             combine_function = lambda a, b: a & b
+        elif is_keyword(token, "OR"):
+            combine_function = lambda a, b: a | b
         else:
             raise ValueError("Could not parse token %r in WHERE clause %r" %
                 (token, where))
