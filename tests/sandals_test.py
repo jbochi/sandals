@@ -9,6 +9,9 @@ def tips():
     return pd.read_csv("tests/data/tips.csv")
 
 
+# SIMPLE SELECT
+
+
 def test_select(tips):
     result = sandals.sql("SELECT * FROM tips", locals())
     assert result.shape == tips.shape
@@ -27,6 +30,9 @@ def test_select_should_accept_line_break(tips):
 def test_select_is_case_insensitive(tips):
     result = sandals.sql("select * from tips;", locals())
     assert result.shape == tips.shape
+
+
+# LIMIT
 
 
 def test_select_with_limit(tips):
@@ -51,6 +57,9 @@ def test_column_selection(tips):
     result = sandals.sql("SELECT total_bill, sex FROM tips", locals())
     assert list(result.columns.values) == ["total_bill", "sex"]
     assert result.shape[0] == tips.shape[0]
+
+
+# WHERE
 
 
 def test_where(tips):
@@ -129,7 +138,7 @@ def test_where_is_null_with_or():
     frame = pd.DataFrame({'col1': ['A', 'B', np.NaN, 'C', 'D'],
                           'col2': ['F', np.NaN, 'G', 'H', 'I']})
     result = sandals.sql(
-        "SELECT * FROM frame WHERE col1 = 'C' OR col2 IS NULL;", locals())
+        "SELECT * FROM frame WHERE col2 IS NULL OR col1 = 'C';", locals())
     expected = frame[(frame['col1'] == 'C') | (frame['col2'].isnull())]
     assert result.shape == expected.shape
 
@@ -140,3 +149,24 @@ def test_where_is_not_null():
     result = sandals.sql("SELECT * FROM frame WHERE col2 IS NOT NULL;", locals())
     expected = frame[frame['col2'].notnull()]
     assert result.shape == expected.shape
+
+
+# GROUP BY
+
+def test_group_by(tips):
+    result = sandals.sql(
+        "SELECT sex, count(*) FROM tips GROUP BY sex;", locals())
+    expected = tips.groupby('sex').size()
+    assert result.shape == expected.shape
+    assert result["Female"] == expected["Female"]
+    assert result["Male"] == expected["Male"]
+
+
+def test_group_by_without_count(tips):
+    # TODO: Shouldn't this fail?
+    result = sandals.sql(
+        "SELECT sex FROM tips GROUP BY sex;", locals())
+    expected = tips.groupby('sex').size()
+    assert result.shape == expected.shape
+    assert result["Female"] == expected["Female"]
+    assert result["Male"] == expected["Male"]
