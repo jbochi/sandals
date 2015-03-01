@@ -6,6 +6,8 @@ class STATES():
     FROM = 2
     TABLE = 3
     LIMIT = 4
+    END = 5
+
 
 def sql(query, tables):
     statement = sqlparse.parse(query)[0]
@@ -47,6 +49,9 @@ def sql(query, tables):
             limit = int(token.value)
             df = df.head(limit)
             state = None
+
+        elif token.ttype == sqlparse.tokens.Punctuation:
+            state = STATES.END
 
         else:
             raise ValueError(u"Could not parse token %s in statment %s" %
