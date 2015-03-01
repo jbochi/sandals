@@ -1,6 +1,6 @@
 #Sandals
 
-Use SQL to transform pandas dataframes.
+Use SQL to transform [pandas](http://pandas.pydata.org/) dataframes.
 
 Unlike [`pandasql`](https://github.com/yhat/pandasql), `sandals` does not use `sqlite`. It manipulates the dataframes directly, avoiding the overhead of moving data to `sqlite`.
 
