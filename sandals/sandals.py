@@ -154,6 +154,7 @@ def is_comparison(token):
 def is_function(token):
     return isinstance(token, sqlparse.sql.Function)
 
+
 def token_value(token):
     value = token.value
     repr_name = token._get_repr_name()
