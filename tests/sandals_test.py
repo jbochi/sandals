@@ -59,8 +59,20 @@ def test_column_selection(tips):
     assert result.shape[0] == tips.shape[0]
 
 
-# WHERE
+def test_qualified_column_selection(tips):
+    result = sandals.sql("SELECT tips.total_bill, sex FROM tips", locals())
+    assert list(result.columns.values) == ["total_bill", "sex"]
+    assert result.shape[0] == tips.shape[0]
 
+
+@pytest.mark.xfail
+def test_qualified_column_selection_with_wrong_table_name(tips):
+    result = sandals.sql("SELECT asdf.total_bill, sex FROM tips", locals())
+    #TODO: Should fail
+
+
+
+# WHERE
 
 def test_where(tips):
     result = sandals.sql(
@@ -72,6 +84,19 @@ def test_where_with_double_quote(tips):
     result = sandals.sql(
         'SELECT * FROM tips WHERE time = "Dinner"', locals())
     assert result.shape == tips[tips["time"] == "Dinner"].shape
+
+
+def test_where_with_table_name(tips):
+    result = sandals.sql(
+        "SELECT * FROM tips WHERE tips.time = 'Dinner'", locals())
+    assert result.shape == tips[tips["time"] == "Dinner"].shape
+
+
+@pytest.mark.xfail
+def test_where_with_wrong_table_name(tips):
+    result = sandals.sql(
+        "SELECT * FROM tips WHERE asdf.time = 'Dinner'", locals())
+    #TODO: Should fail
 
 
 def test_where_with_greater_than(tips):
@@ -118,10 +143,9 @@ def test_where_with_or(tips):
     assert result.shape == expected.shape
 
 
-@pytest.mark.xfail
 def test_where_with_special_col_name(tips):
     result = sandals.sql(
-        "SELECT * FROM tips WHERE size >= 5 OR total_bill > 45;", locals())
+        "SELECT * FROM tips WHERE tips.size >= 5 OR total_bill > 45;", locals())
     expected = tips[(tips["size"] >= 5) | (tips["total_bill"] > 45)]
     assert result.shape == expected.shape
 
@@ -157,16 +181,15 @@ def test_group_by(tips):
     result = sandals.sql(
         "SELECT sex, count(*) FROM tips GROUP BY sex;", locals())
     expected = tips.groupby('sex').size()
-    assert result.shape == expected.shape
-    assert result["Female"] == expected["Female"]
-    assert result["Male"] == expected["Male"]
+    assert result.columns == ["sex"]
+    assert result["sex"]["Female"] == expected["Female"]
+    assert result["sex"]["Male"] == expected["Male"]
 
 
-def test_group_by_without_count(tips):
-    # TODO: Shouldn't this fail?
+def test_group_by_with_multiple_functions(tips):
     result = sandals.sql(
-        "SELECT sex FROM tips GROUP BY sex;", locals())
-    expected = tips.groupby('sex').size()
+        "SELECT tips.day, AVG(tip), COUNT(*) FROM tips GROUP BY tips.day;", locals())
+    expected = tips.groupby('day').agg({'tip': np.mean, 'day': np.size})
     assert result.shape == expected.shape
-    assert result["Female"] == expected["Female"]
-    assert result["Male"] == expected["Male"]
+    assert result["tip"]["Fri"] == expected["tip"]["Fri"]
+    assert result["day"]["Sun"] == expected["day"]["Sun"]

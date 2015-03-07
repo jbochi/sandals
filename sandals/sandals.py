@@ -1,4 +1,6 @@
 import sqlparse
+import numpy as np
+
 
 class STATES():
     SELECT = 0
@@ -16,6 +18,7 @@ def sql(query, tables):
     state = STATES.SELECT
     df = None
     columns = None
+    functions = []
 
     for token in statement.tokens:
         if token.is_whitespace():
@@ -35,8 +38,7 @@ def sql(query, tables):
         elif state == STATES.COLUMNS and is_identifierlist(token):
             columns = [col.get_name()
                 for col in token.get_identifiers() if is_identifier(col)]
-            functions = [col.get_name()
-                for col in token.get_identifiers() if is_function(col)]
+            functions = [f for f in token.get_identifiers() if is_function(f)]
         elif is_keyword(token, "FROM"):
             assert state == STATES.COLUMNS
             state = STATES.TABLE
@@ -45,7 +47,7 @@ def sql(query, tables):
         elif state == STATES.TABLE and is_identifier(token):
             table_name = token.get_name()
             df = tables[table_name]
-            if columns:
+            if columns and not functions:
                 df = df[columns]
 
         #where clause
@@ -59,7 +61,7 @@ def sql(query, tables):
         elif is_keyword(token, "BY"):
             assert state == STATES.GROUP
         elif state == STATES.GROUP and is_identifier(token):
-            df = df.groupby(token.get_name()).size()
+            df = aggregate(df, columns, functions, token.get_name())
 
         #limit
         elif is_keyword(token, "LIMIT"):
@@ -101,7 +103,7 @@ def where_to_filter(df, where):
         elif is_keyword(token, "OR"):
             combine_function = lambda a, b: a | b
         elif is_identifier(token):
-            column = df[token.value]
+            column = select_column(df, token)
         elif is_keyword(token, "IS"):
             pass
         elif is_keyword(token, "NOT NULL"):
@@ -115,7 +117,7 @@ def where_to_filter(df, where):
 
 
 def comparison_to_filter(df, comparison):
-    column = df[comparison.left.value]
+    column = select_column(df, comparison.left)
     value = token_value(comparison.right)
     symbol = filter(is_comparison, comparison.tokens)[0]
     if symbol.value == "=":
@@ -169,3 +171,37 @@ def token_value(token):
     elif repr_name == "Float":
         return float(value)
     raise ValueError("Unknown token value %r" % token)
+
+
+def select_column(df, token):
+    column_name = token.value
+    if "." in column_name:
+        table_name, column_name = column_name.split(".", 1)
+        #TODO: Assert table name is correct
+    #TODO: Catch KeyError exception and raise error saying column does not exist
+    return df[column_name]
+
+
+def aggregate(df, columns, functions, group_by_column):
+    agg_dict = dict(agg_tuple(f, group_by_column) for f in functions)
+    res = df.groupby(group_by_column).agg(agg_dict)
+    return res
+
+
+def agg_tuple(f, group_by_column):
+    return (column_from_function(f, group_by_column), function_from_name(f.get_name()))
+
+
+def column_from_function(f, group_by_column):
+    function_args = f.tokens[1].tokens[1]
+    if function_args.ttype == sqlparse.tokens.Token.Wildcard:
+        return group_by_column
+    return function_args.value
+
+
+def function_from_name(function_name):
+    if function_name.upper() == "AVG":
+        return np.mean
+    elif function_name.upper() == "COUNT":
+        return np.size
+    raise ValueError("Unknown function %f" % function_name)
