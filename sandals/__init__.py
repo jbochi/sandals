@@ -1,1 +1,1 @@
-from sandals import sql
+from .sandals import sql
