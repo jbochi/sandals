@@ -94,7 +94,7 @@ def sql(query, tables):
             state = STATES.END
 
         else:
-            raise ValueError(u"Could not parse token %r in statement %r" %
+            raise ValueError("Could not parse token %r in statement %r" %
                 (token, statement))
     return df
 
