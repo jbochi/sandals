@@ -71,9 +71,14 @@ def sql(query, tables):
         elif is_keyword(token, "BY") and state == STATES.ORDER:
             pass
         elif state == STATES.ORDER and is_identifier(token):
-            descending = any(t.value == "DESC" for t in token.tokens if
-                t.ttype == sqlparse.tokens.Token.Keyword.Order)
+            descending = is_order_descending(token)
             df = df.sort(token.get_name(), ascending=not descending)
+        elif state == STATES.ORDER and is_identifierlist(token):
+            column_identifiers = [t for t in token.tokens if is_identifier(t)]
+            column_names = [c.get_name() for c in column_identifiers]
+            orders = [0 if is_order_descending(c) else 1
+                for c in column_identifiers]
+            df = df.sort(column_names, ascending=orders)
 
         #limit
         elif is_keyword(token, "LIMIT"):
@@ -217,3 +222,8 @@ def function_from_name(function_name):
     elif function_name.upper() == "COUNT":
         return np.size
     raise ValueError("Unknown function %f" % function_name)
+
+
+def is_order_descending(token):
+    return any(t.value == "DESC" for t in token.tokens if
+        t.ttype == sqlparse.tokens.Token.Keyword.Order)

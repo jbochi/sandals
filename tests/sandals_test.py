@@ -207,3 +207,9 @@ def test_order_by_desc(tips):
     expected = tips.sort("total_bill", ascending=False)[:3]
     assert result.shape == expected.shape
     assert result.iloc[0]["total_bill"] == expected.iloc[0]["total_bill"]
+
+def test_order_by_desc(tips):
+    result = sandals.sql("SELECT * FROM tips ORDER BY tips.size DESC, total_bill LIMIT 3", locals())
+    expected = tips.sort(["size", "total_bill"], ascending=[0, 1])[:3]
+    assert result.shape == expected.shape
+    assert result.iloc[0]["total_bill"] == expected.iloc[0]["total_bill"]

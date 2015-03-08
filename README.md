@@ -31,4 +31,9 @@ Fri   2.734737   19
 Sat   2.993103   87
 Sun   3.255132   76
 Thur  2.771452   62
+>>> sandals.sql("SELECT * FROM tips ORDER BY tips.size DESC, total_bill LIMIT 3", locals())
+     total_bill  tip     sex smoker   day   time  size
+143       27.05  5.0  Female     No  Thur  Lunch     6
+125       29.80  4.2  Female     No  Thur  Lunch     6
+141       34.30  6.7    Male     No  Thur  Lunch     6
 ```
