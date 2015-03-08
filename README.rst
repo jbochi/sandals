@@ -22,7 +22,7 @@ Usage
 
 Some examples:
 
-.. code-block:: python
+.. code-block::
 
   >>> import pandas as pd
   >>> import sandals
