@@ -96,7 +96,6 @@ def test_where_with_table_name(tips):
 def test_where_with_wrong_table_name(tips):
     result = sandals.sql(
         "SELECT * FROM tips WHERE asdf.time = 'Dinner'", locals())
-    #TODO: Should fail
 
 
 def test_where_with_greater_than(tips):
@@ -193,3 +192,18 @@ def test_group_by_with_multiple_functions(tips):
     assert result.shape == expected.shape
     assert result["tip"]["Fri"] == expected["tip"]["Fri"]
     assert result["day"]["Sun"] == expected["day"]["Sun"]
+
+
+# ORDER BY
+
+def test_order_by(tips):
+    result = sandals.sql("SELECT * FROM tips ORDER BY total_bill LIMIT 3", locals())
+    expected = tips.sort("total_bill")[:3]
+    assert result.shape == expected.shape
+    assert result.iloc[0]["total_bill"] == expected.iloc[0]["total_bill"]
+
+def test_order_by_desc(tips):
+    result = sandals.sql("SELECT * FROM tips ORDER BY total_bill DESC LIMIT 3", locals())
+    expected = tips.sort("total_bill", ascending=False)[:3]
+    assert result.shape == expected.shape
+    assert result.iloc[0]["total_bill"] == expected.iloc[0]["total_bill"]

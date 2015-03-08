@@ -8,8 +8,9 @@ class STATES():
     FROM = 2
     TABLE = 3
     GROUP = 4
-    LIMIT = 5
-    END = 6
+    ORDER = 5
+    LIMIT = 6
+    END = 7
 
 
 def sql(query, tables):
@@ -58,14 +59,25 @@ def sql(query, tables):
         elif is_keyword(token, "GROUP"):
             assert state == STATES.TABLE
             state = STATES.GROUP
-        elif is_keyword(token, "BY"):
-            assert state == STATES.GROUP
+        elif is_keyword(token, "BY") and state == STATES.GROUP:
+            pass
         elif state == STATES.GROUP and is_identifier(token):
             df = aggregate(df, columns, functions, token.get_name())
 
+        #order
+        elif is_keyword(token, "ORDER"):
+            assert state == STATES.TABLE or STATES.GROUP
+            state = STATES.ORDER
+        elif is_keyword(token, "BY") and state == STATES.ORDER:
+            pass
+        elif state == STATES.ORDER and is_identifier(token):
+            descending = any(t.value == "DESC" for t in token.tokens if
+                t.ttype == sqlparse.tokens.Token.Keyword.Order)
+            df = df.sort(token.get_name(), ascending=not descending)
+
         #limit
         elif is_keyword(token, "LIMIT"):
-            assert state == STATES.TABLE or STATES.GROUP
+            assert state == STATES.TABLE or STATES.GROUP or STATES.ORDER
             state = STATES.LIMIT
         elif state == STATES.LIMIT:
             limit = token_value(token)
