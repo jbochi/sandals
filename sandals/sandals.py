@@ -136,7 +136,7 @@ def where_to_filter(df, where):
 def comparison_to_filter(df, comparison):
     column = select_column(df, comparison.left)
     value = token_value(comparison.right)
-    symbol = filter(is_comparison, comparison.tokens)[0]
+    symbol = [t for t in comparison.tokens if is_comparison(t)][0]
     if symbol.value == "=":
         return column == value
     if symbol.value == ">":
