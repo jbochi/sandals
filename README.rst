@@ -8,6 +8,10 @@ Sandals
   :alt: Travis CI build status
   :target: https://travis-ci.org/jbochi/sandals
 
+.. image:: https://coveralls.io/repos/jbochi/sandals/badge.svg?branch=master
+  :alt: Coveralls badge
+  :target: https://coveralls.io/r/jbochi/sandals?branch=master
+
 
 Use SQL to transform pandas_ dataframes.
 
