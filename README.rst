@@ -1,17 +1,21 @@
 Sandals
 =======
 
-Use SQL to transform [pandas](http://pandas.pydata.org/) dataframes.
-
 .. image:: https://travis-ci.org/jbochi/sandals.svg?branch=master
   :alt: Travis CI build status
   :target: https://travis-ci.org/jbochi/sandals
 
 
-Unlike [`pandasql`](https://github.com/yhat/pandasql), `sandals` does not use `sqlite`. It manipulates the dataframes directly, avoiding the overhead of moving data to and from `sqlite`.
+Use SQL to transform pandas_ dataframes.
 
-This is a work in progress. The goal is to support all examples documented on [pandas' comparison with sql] (http://pandas.pydata.org/pandas-docs/dev/comparison_with_sql.html).
+Unlike pandasql_, sandals does not use sqlite. It manipulates the dataframes directly, avoiding the 
+overhead of moving data to and from sqlite.
 
+This is a work in progress. The goal is to support all examples documented on pandas' `comparison with sql`__.
+
+.. _pandas: http://pandas.pydata.org/
+.. _pandasql: https://github.com/yhat/pandasql
+.. __: http://pandas.pydata.org/pandas-docs/dev/comparison_with_sql.html
 
 Usage
 -----
@@ -47,3 +51,4 @@ Some examples:
   Sat   2.993103   87
   Sun   3.255132   76
   Thur  2.771452   62
+
