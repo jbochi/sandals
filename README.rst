@@ -1,6 +1,9 @@
 Sandals
 =======
 
+.. image:: https://raw.githubusercontent.com/jbochi/sandals/master/logo.jpg
+  :scale: 50 %
+
 .. image:: https://travis-ci.org/jbochi/sandals.svg?branch=master
   :alt: Travis CI build status
   :target: https://travis-ci.org/jbochi/sandals
