@@ -62,7 +62,11 @@ def sql(query, tables):
         elif is_keyword(token, "BY") and state == STATES.GROUP:
             pass
         elif state == STATES.GROUP and is_identifier(token):
-            df = aggregate(df, columns, functions, token.get_name())
+            df = aggregate(df, columns, functions, [token.get_name()])
+        elif state == STATES.GROUP and is_identifierlist(token):
+            group_by_cols = [t.get_name() for t in token.tokens
+                if is_identifier(t)]
+            df = aggregate(df, columns, functions, group_by_cols)
 
         #order
         elif is_keyword(token, "ORDER"):
@@ -199,20 +203,22 @@ def select_column(df, token):
     return df[column_name]
 
 
-def aggregate(df, columns, functions, group_by_column):
-    agg_dict = dict(agg_tuple(f, group_by_column) for f in functions)
-    res = df.groupby(group_by_column).agg(agg_dict)
+def aggregate(df, columns, functions, group_by_cols):
+    agg_dict = dict(agg_tuple(f, group_by_cols) for f in functions)
+    res = df.groupby(group_by_cols).agg(agg_dict)
     return res
 
 
-def agg_tuple(f, group_by_column):
-    return (column_from_function(f, group_by_column), function_from_name(f.get_name()))
+def agg_tuple(f, group_by_cols):
+    # Returns tupple (column, function) for aggregation
+    return (column_from_function(f, group_by_cols),
+            function_from_name(f.get_name()))
 
 
-def column_from_function(f, group_by_column):
+def column_from_function(f, group_by_cols):
     function_args = f.tokens[1].tokens[1]
     if function_args.ttype == sqlparse.tokens.Token.Wildcard:
-        return group_by_column
+        return group_by_cols[0]
     return function_args.value
 
 

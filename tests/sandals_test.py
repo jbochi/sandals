@@ -194,6 +194,16 @@ def test_group_by_with_multiple_functions(tips):
     assert result["day"]["Sun"] == expected["day"]["Sun"]
 
 
+def test_group_by_multiple_columns(tips):
+    result = sandals.sql(
+        """SELECT smoker, tips.day, COUNT(*), AVG(tip)
+           FROM tips GROUP BY smoker, tips.day;""", locals())
+    expected = tips.groupby(['smoker', 'day']).agg({'tip': [np.size, np.mean]})
+    assert result.shape == expected.shape
+    assert list(result["smoker"]) == list(expected["tip"]["size"])
+    assert list(result["tip"]) == list(expected["tip"]["mean"])
+
+
 # ORDER BY
 
 def test_order_by(tips):
