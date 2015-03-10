@@ -15,7 +15,7 @@ Sandals
 
 Use SQL to transform pandas_ dataframes.
 
-Unlike pandasql_, sandals does not use sqlite. It manipulates the dataframes directly, avoiding the 
+Unlike pandasql_, sandals does not use sqlite. It manipulates the dataframes directly, avoiding the
 overhead of moving data to and from sqlite.
 
 This is a work in progress. The goal is to support all examples documented on pandas' `comparison with sql`__.
@@ -58,4 +58,14 @@ Some examples:
   Sat   2.993103   87
   Sun   3.255132   76
   Thur  2.771452   62
-
+  >>> sandals.sql("SELECT smoker, tips.day, COUNT(*), AVG(tip) FROM tips GROUP BY smoker, tips.day;", locals())
+                    tip  smoker
+  smoker day
+  No     Fri   2.812500       4
+         Sat   3.102889      45
+         Sun   3.167895      57
+         Thur  2.673778      45
+  Yes    Fri   2.714000      15
+         Sat   2.875476      42
+         Sun   3.516842      19
+         Thur  3.030000      17
